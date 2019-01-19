@@ -1,8 +1,9 @@
 /* global LIMITS */
 const html = require('choo/html');
 const { bytes } = require('../utils');
+const { canceledSignup, submittedSignup } = require('../metrics');
 
-module.exports = function() {
+module.exports = function(trigger) {
   return function(state, emit, close) {
     setTimeout(function() {
       document.getElementById('email-input').focus();
@@ -38,7 +39,7 @@ module.exports = function() {
       <button
         class="my-4 text-blue hover:text-blue-dark focus:text-blue-darker font-medium"
         title="${state.translate('deletePopupCancel')}"
-        onclick=${close}>${state.translate('deletePopupCancel')}
+        onclick=${cancel}>${state.translate('deletePopupCancel')}
       </button>
     </send-signup-dialog>`;
 
@@ -51,10 +52,16 @@ module.exports = function() {
       return a.length === 2 && a.every(s => s.length > 0);
     }
 
+    function cancel(event) {
+      canceledSignup({ trigger });
+      close(event);
+    }
+
     function submitEmail(event) {
       event.preventDefault();
       const el = document.getElementById('email-input');
       const email = el.value;
+      submittedSignup({ trigger });
       emit('login', emailish(email) ? email : null);
     }
   };
